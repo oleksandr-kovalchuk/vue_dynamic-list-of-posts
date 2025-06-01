@@ -1,64 +1,59 @@
-<script>
+<script setup>
+import { ref } from 'vue'
 import InputField from './InputField.vue'
 import TextAreaField from './TextAreaField.vue'
 
-export default {
-  name: 'CommentForm',
-  components: {
-    InputField,
-    TextAreaField,
-  },
-  props: {
-    error: String,
-  },
-  emits: ['createComment', 'closeForm'],
-  data() {
-    return {
-      fields: {
-        name: '',
-        email: '',
-        body: '',
-      },
-      errors: {
-        name: '',
-        email: '',
-        body: '',
-      },
-    }
-  },
-  methods: {
-    handleRemoveError(key) {
-      this.errors[key] = ''
-    },
-    handleCheckErrors() {
-      if (!this.fields.name) {
-        this.errors.name = `Name is required!`
-      }
-      if (!this.fields.email) {
-        this.errors.email = `Email is required!`
-      }
-      if (!this.fields.body) {
-        this.errors.body = `Comment is required!`
-      }
+defineProps({
+  error: String,
+})
 
-      const emailPattern = /^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/
-      if (!this.errors.email && !emailPattern.test(this.fields.email)) {
-        this.errors.email = `Email is no valid!`
-      }
-    },
-    handleSubmit() {
-      this.handleCheckErrors()
+const emit = defineEmits(['createComment', 'closeForm'])
 
-      if (Object.values(this.errors).some((error) => error.length > 0)) {
-        return
-      }
+const fields = ref({
+  name: '',
+  email: '',
+  body: '',
+})
 
-      this.$emit('createComment', { ...this.fields })
-    },
-    handleReset() {
-      this.$emit('closeForm')
-    },
-  },
+const errors = ref({
+  name: '',
+  email: '',
+  body: '',
+})
+
+const handleRemoveError = (key) => {
+  errors.value[key] = ''
+}
+
+const handleCheckErrors = () => {
+  if (!fields.value.name) {
+    errors.value.name = `Name is required!`
+  }
+  if (!fields.value.email) {
+    errors.value.email = `Email is required!`
+  }
+  if (!fields.value.body) {
+    errors.value.body = `Comment is required!`
+  }
+
+  const emailPattern = /^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/
+  if (!errors.value.email && !emailPattern.test(fields.value.email)) {
+    errors.value.email = `Email is no valid!`
+  }
+}
+
+const handleSubmit = () => {
+  handleCheckErrors()
+
+  if (Object.values(errors.value).some((error) => error.length > 0)) {
+    return
+  }
+
+  emit('createComment', { ...fields.value })
+}
+
+const handleReset = () => {
+  emit('closeForm')
 }
 </script>
 

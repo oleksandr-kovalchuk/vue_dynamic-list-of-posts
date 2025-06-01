@@ -1,79 +1,73 @@
-<script>
+<script setup>
+import { ref, watch } from 'vue'
 import InputField from './InputField.vue'
 import TextAreaField from './TextAreaField.vue'
 
-export default {
-  name: 'AddPost',
-  components: {
-    InputField,
-    TextAreaField,
+const props = defineProps({
+  selectedPost: {
+    type: Object,
+    default: () => ({}),
   },
-  props: {
-    selectedPost: {
-      type: Object,
-      default: () => ({}),
-    },
-  },
-  emits: ['closeForm', 'createPost', 'updatePost'],
-  data() {
-    return {
-      fields: {
-        title: '',
-        body: '',
-      },
-      errors: {
-        title: '',
-        body: '',
-      },
+})
+
+const emit = defineEmits(['closeForm', 'createPost', 'updatePost'])
+
+const fields = ref({
+  title: '',
+  body: '',
+})
+
+const errors = ref({
+  title: '',
+  body: '',
+})
+
+watch(
+  () => props.selectedPost,
+  (newPost) => {
+    if (!newPost || !newPost.id) {
+      fields.value.title = ''
+      fields.value.body = ''
+      return
     }
+
+    fields.value.title = newPost.title
+    fields.value.body = newPost.body
   },
-  watch: {
-    selectedPost: {
-      handler(newPost) {
-        if (!newPost || !newPost.id) {
-          this.fields.title = ''
-          this.fields.body = ''
-          return
-        }
+  { deep: true, immediate: true },
+)
 
-        this.fields.title = newPost.title
-        this.fields.body = newPost.body
-      },
-      deep: true,
-      immediate: true,
-    },
-  },
-  methods: {
-    handleRemoveError(key) {
-      this.errors[key] = ''
-    },
-    handleCheckErrors(key) {
-      if (!this.fields[key]) {
-        this.errors[key] = `${key} is required!`
-      }
-    },
-    handleClose() {
-      this.$emit('closeForm')
-    },
-    handleSubmit() {
-      Object.keys(this.fields).forEach((key) => {
-        this.handleCheckErrors(key)
-      })
+const handleRemoveError = (key) => {
+  errors.value[key] = ''
+}
 
-      if (Object.values(this.errors).some((error) => error.length > 0)) {
-        return
-      }
+const handleCheckErrors = (key) => {
+  if (!fields.value[key]) {
+    errors.value[key] = `${key} is required!`
+  }
+}
 
-      if (Object.keys(this.selectedPost).includes('id')) {
-        this.$emit('updatePost', { ...this.selectedPost, ...this.fields })
-        return
-      }
+const handleClose = () => {
+  emit('closeForm')
+}
 
-      this.$emit('createPost', { ...this.fields })
-      this.fields.title = ''
-      this.fields.body = ''
-    },
-  },
+const handleSubmit = () => {
+  Object.keys(fields.value).forEach((key) => {
+    handleCheckErrors(key)
+  })
+
+  if (Object.values(errors.value).some((error) => error.length > 0)) {
+    return
+  }
+
+  if (Object.keys(props.selectedPost).includes('id')) {
+    emit('updatePost', { ...props.selectedPost, ...fields.value })
+    return
+  }
+
+  emit('createPost', { ...fields.value })
+  fields.value.title = ''
+  fields.value.body = ''
 }
 </script>
 

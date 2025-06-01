@@ -1,35 +1,26 @@
-<!-- eslint-disable vue/no-reserved-component-names -->
-<script>
-import Header from './components/Header.vue'
+<script setup>
+import { ref, onMounted } from 'vue'
+import AppHeader from './components/AppHeader.vue'
 import LoginPage from './components/LoginPage.vue'
 import PostsList from './components/PostsList.vue'
-export default {
-  components: {
-    LoginPage,
-    Header,
-    PostsList,
-  },
-  data() {
-    return {
-      user: {},
-    }
-  },
-  mounted() {
-    const userInLocalStorage = JSON.parse(localStorage.getItem('user'))
-    if (userInLocalStorage) {
-      this.user = userInLocalStorage
-    }
-  },
-  methods: {
-    handleSaveUser(user) {
-      localStorage.setItem('user', JSON.stringify(user))
-      this.user = user
-    },
-    handleRemoveUser() {
-      localStorage.removeItem('user')
-      this.user = {}
-    },
-  },
+
+const user = ref({})
+
+onMounted(() => {
+  const userInLocalStorage = JSON.parse(localStorage.getItem('user'))
+  if (userInLocalStorage) {
+    user.value = userInLocalStorage
+  }
+})
+
+const handleSaveUser = (userData) => {
+  localStorage.setItem('user', JSON.stringify(userData))
+  user.value = userData
+}
+
+const handleRemoveUser = () => {
+  localStorage.removeItem('user')
+  user.value = {}
 }
 </script>
 
@@ -37,7 +28,7 @@ export default {
   <LoginPage v-if="!user.hasOwnProperty('id')" @addUser="handleSaveUser" />
 
   <template v-else>
-    <Header :user="user" @log-out="handleRemoveUser" />
+    <AppHeader :user="user" @log-out="handleRemoveUser" />
     <main class="section">
       <div class="container">
         <div class="tile is-ancestor is-flex is-flex-wrap-wrap">

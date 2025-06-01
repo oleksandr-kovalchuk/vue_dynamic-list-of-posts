@@ -1,90 +1,87 @@
-<script>
+<script setup>
+import { ref } from 'vue'
 import { getUserByEmail, createUser } from '@/api/users'
-export default {
-  name: 'LoginPage',
-  data() {
-    return {
-      email: '',
-      name: '',
-      errors: {
-        email: '',
-        name: '',
-        total: '',
-      },
-      isNeedRegister: false,
-    }
-  },
-  emits: ['addUser'],
-  methods: {
-    validateEmail() {
-      if (!this.email.trim().length) {
-        this.errors.email = 'Email is required'
+
+const emit = defineEmits(['addUser'])
+
+const email = ref('')
+const name = ref('')
+const errors = ref({
+  email: '',
+  name: '',
+  total: '',
+})
+const isNeedRegister = ref(false)
+
+const validateEmail = () => {
+  if (!email.value.trim().length) {
+    errors.value.email = 'Email is required'
+    return
+  }
+
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+
+  if (!emailRegex.test(email.value)) {
+    errors.value.email = 'Email is not valid'
+    return
+  }
+}
+
+const validateName = () => {
+  if (!name.value.trim().length) {
+    errors.value.name = 'Name is required'
+    return
+  }
+
+  if (name.value.trim().length < 2) {
+    errors.value.name = 'Name must have at least 2 chars'
+    return
+  }
+}
+
+const handleLogin = () => {
+  validateEmail()
+
+  if (errors.value.email) {
+    return
+  }
+
+  getUserByEmail(email.value.trim())
+    .then(({ data }) => {
+      if (!data.length) {
+        isNeedRegister.value = true
         return
       }
 
-      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+      emit('addUser', data[0])
+    })
+    .catch((e) => {
+      console.log(e)
+      errors.value.total = 'Server Error. Try again later!'
+    })
+}
 
-      if (!emailRegex.test(this.email)) {
-        this.errors.email = 'Email is not valid'
-        return
-      }
-    },
-    validateName() {
-      if (!this.name.trim().length) {
-        this.errors.name = 'Name is required'
-        return
-      }
+const handleRegister = () => {
+  validateEmail()
+  validateName()
 
-      if (this.name.trim().length < 2) {
-        this.errors.name = 'Name must have at least 2 chars'
-        return
-      }
-    },
-    handleLogin() {
-      this.validateEmail()
+  if (errors.value.email || errors.value.name) {
+    return
+  }
 
-      if (this.errors.email) {
-        return
-      }
+  const nameValue = name.value.trim()
+  const emailValue = email.value.trim()
+  const username = null
+  const phone = null
 
-      getUserByEmail(this.email.trim())
-        .then(({ data }) => {
-          if (!data.length) {
-            this.isNeedRegister = true
-
-            return
-          }
-
-          this.$emit('addUser', data[0])
-        })
-        .catch((e) => {
-          console.log(e)
-          this.errors.total = 'Server Error. Try again later!'
-        })
-    },
-    handleRegister() {
-      this.validateEmail()
-      this.validateName()
-
-      if (this.errors.email || this.errors.name) {
-        return
-      }
-
-      const name = this.name.trim()
-      const email = this.email.trim()
-      const username = null
-      const phone = null
-
-      createUser({ name, email, username, phone })
-        .then(({ data }) => {
-          this.$emit('addUser', data)
-        })
-        .catch((e) => {
-          console.log(e)
-          this.errors.total = 'Server Error. Try again later!'
-        })
-    },
-  },
+  createUser({ name: nameValue, email: emailValue, username, phone })
+    .then(({ data }) => {
+      emit('addUser', data)
+    })
+    .catch((e) => {
+      console.log(e)
+      errors.value.total = 'Server Error. Try again later!'
+    })
 }
 </script>
 

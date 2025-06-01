@@ -1,54 +1,55 @@
-<script>
-export default {
-  name: 'InputField',
-  props: {
-    modelValue: String,
-    inputName: String,
-    inputError: String,
+<script setup>
+import { ref, watch, onMounted } from 'vue'
+
+const props = defineProps({
+  modelValue: String,
+  inputName: String,
+  inputError: String,
+})
+
+const emit = defineEmits(['update:modelValue', 'removeError'])
+
+const label = ref('')
+const type = ref('')
+const placeholder = ref('')
+const iconClass = ref('')
+const internalValue = ref(props.modelValue)
+
+onMounted(() => {
+  switch (props.inputName) {
+    case 'postTitle':
+      label.value = 'Title'
+      type.value = 'text'
+      placeholder.value = 'Post title'
+      iconClass.value = 'fa-user'
+      break
+    case 'commentAuthor':
+      label.value = 'Author Name'
+      type.value = 'text'
+      placeholder.value = 'Name Surname'
+      iconClass.value = 'fa-user'
+      break
+    case 'commentAuthorEmail':
+      label.value = 'Author Email'
+      type.value = 'email'
+      placeholder.value = 'Your Email'
+      iconClass.value = 'fa-envelope'
+      break
+    default:
+      break
+  }
+})
+
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    internalValue.value = newVal
   },
-  emits: ['update:modelValue', 'removeError'],
-  data() {
-    return {
-      label: '',
-      type: '',
-      placeholder: '',
-      iconClass: '',
-      internalValue: this.modelValue,
-    }
-  },
-  mounted() {
-    switch (this.inputName) {
-      case 'postTitle':
-        this.label = 'Title'
-        this.type = 'text'
-        this.placeholder = 'Post title'
-        this.iconClass = 'fa-user'
-        break
-      case 'commentAuthor':
-        this.label = 'Author Name'
-        this.type = 'text'
-        this.placeholder = 'Name Surname'
-        this.iconClass = 'fa-user'
-        break
-      case 'commentAuthorEmail':
-        this.label = 'Author Email'
-        this.type = 'email'
-        this.placeholder = 'Your Email'
-        this.iconClass = 'fa-envelope'
-        break
-      default:
-        break
-    }
-  },
-  watch: {
-    modelValue(newVal) {
-      this.internalValue = newVal
-    },
-    internalValue(newVal) {
-      this.$emit('update:modelValue', newVal)
-    },
-  },
-}
+)
+
+watch(internalValue, (newVal) => {
+  emit('update:modelValue', newVal)
+})
 </script>
 
 <template>
@@ -65,7 +66,7 @@ export default {
         class="input"
         :class="{ 'is-danger': inputError }"
         v-model="internalValue"
-        @input="$emit('removeError')"
+        @input="emit('removeError')"
       />
       <span class="icon is-small is-left">
         <i class="fas" :class="iconClass"></i>

@@ -1,43 +1,43 @@
-<script>
-export default {
-  name: 'TextAreaField',
-  props: {
-    modelValue: String,
-    textAreaName: String,
-    textAreaError: String,
+<script setup>
+import { ref, watch, onMounted } from 'vue'
+
+const props = defineProps({
+  modelValue: String,
+  textAreaName: String,
+  textAreaError: String,
+})
+
+const emit = defineEmits(['update:modelValue', 'removeError'])
+
+const label = ref('')
+const placeholder = ref('')
+const internalValue = ref(props.modelValue)
+
+onMounted(() => {
+  switch (props.textAreaName) {
+    case 'postBody':
+      label.value = 'Write Post Body'
+      placeholder.value = 'Post body'
+      break
+    case 'commentBody':
+      label.value = 'Write Comment'
+      placeholder.value = 'Comment'
+      break
+    default:
+      break
+  }
+})
+
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    internalValue.value = newVal
   },
-  emits: ['update:modelValue', 'removeError'],
-  data() {
-    return {
-      label: '',
-      type: '',
-      placeholder: '',
-      internalValue: this.modelValue,
-    }
-  },
-  mounted() {
-    switch (this.textAreaName) {
-      case 'postBody':
-        this.label = 'Write Post Body'
-        this.placeholder = 'Post body'
-        break
-      case 'commentBody':
-        this.label = 'Write Comment'
-        this.placeholder = 'Comment'
-        break
-      default:
-        break
-    }
-  },
-  watch: {
-    modelValue(newVal) {
-      this.internalValue = newVal
-    },
-    internalValue(newVal) {
-      this.$emit('update:modelValue', newVal)
-    },
-  },
-}
+)
+
+watch(internalValue, (newVal) => {
+  emit('update:modelValue', newVal)
+})
 </script>
 
 <template>
@@ -51,7 +51,7 @@ export default {
         class="textarea"
         :class="textAreaError"
         v-model="internalValue"
-        @input="$emit('removeError')"
+        @input="emit('removeError')"
       ></textarea>
     </div>
 

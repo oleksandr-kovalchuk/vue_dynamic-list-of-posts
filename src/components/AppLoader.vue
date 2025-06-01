@@ -1,9 +1,4 @@
-<!-- eslint-disable vue/multi-word-component-names -->
-<script>
-export default {
-  name: 'Loader',
-}
-</script>
+<script setup></script>
 
 <template>
   <div class="lds-ring">

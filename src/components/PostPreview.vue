@@ -1,18 +1,16 @@
-<script>
-export default {
-  name: 'PostPreview',
-  props: {
-    selectedPost: Object,
-  },
-  emits: ['deletePost', 'updatePost'],
-  methods: {
-    handleDeletePost() {
-      this.$emit('deletePost', this.selectedPost.id);
-    },
-    handleUpdatePost() {
-      this.$emit('updatePost');
-    }
-  }
+<script setup>
+const props = defineProps({
+  selectedPost: Object,
+})
+
+const emit = defineEmits(['deletePost', 'updatePost'])
+
+const handleDeletePost = () => {
+  emit('deletePost', props.selectedPost.id)
+}
+
+const handleUpdatePost = () => {
+  emit('updatePost')
 }
 </script>
 
@@ -24,11 +22,14 @@ export default {
         <span class="icon is-small is-right is-clickable" @click="handleUpdatePost">
           <i class="fas fa-pen-to-square"></i>
         </span>
-        <span class="icon is-small is-right has-text-danger is-clickable ml-3" @click="handleDeletePost">
+        <span
+          class="icon is-small is-right has-text-danger is-clickable ml-3"
+          @click="handleDeletePost"
+        >
           <i class="fas fa-trash"></i>
         </span>
       </div>
     </div>
-    <p data-cy="PostBody">{{selectedPost.body}}</p>
+    <p data-cy="PostBody">{{ selectedPost.body }}</p>
   </div>
 </template>

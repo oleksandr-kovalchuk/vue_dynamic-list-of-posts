@@ -1,76 +1,71 @@
-<script>
+<script setup>
+import { ref, onMounted } from 'vue'
 import { getPostsByUserId, removePost, createPost, updatePost } from '@/api/posts'
-import Loader from './Loader.vue'
-import Sidebar from './Sidebar.vue'
+import AppLoader from './AppLoader.vue'
+import AppSidebar from './AppSidebar.vue'
 
-export default {
-  name: 'PostsList',
-  components: {
-    Loader,
-    Sidebar,
-  },
-  props: {
-    userId: Number,
-  },
-  data() {
-    return {
-      posts: [],
-      isLoading: false,
-      selectedPost: {},
-      isSidebarActive: false,
-    }
-  },
-  mounted() {
-    this.isLoading = true
+const props = defineProps({
+  userId: Number,
+})
 
-    getPostsByUserId(this.userId)
-      .then(({ data }) => {
-        this.posts = data
-      })
-      .finally(() => {
-        this.isLoading = false
-      })
-  },
-  methods: {
-    handleAddPost() {
-      this.isSidebarActive = true
-      this.selectedPost = {}
-    },
-    handleSelectPost(post) {
-      this.isSidebarActive = true
-      this.selectedPost = { ...post }
-    },
-    handleCloseSidebar() {
-      this.selectedPost = {}
-      this.isSidebarActive = false
-    },
-    handleDeletePost(postId) {
-      removePost(postId).then(() => {
-        this.posts = this.posts.filter((post) => post.id !== postId)
-        this.isSidebarActive = false
-      })
-    },
-    handleCreatePost(newPost) {
-      const userId = this.userId
-      createPost({ ...newPost, userId }).then(({ data }) => {
-        this.posts.push(data)
-        this.selectedPost = this.posts[this.posts.length - 1]
-      })
-    },
-    handleUpdatePost(postToUpdate) {
-      const userId = this.userId
-      updatePost(postToUpdate.id, { ...postToUpdate, userId }).then(({ data }) => {
-        this.posts = this.posts.map((post) => {
-          if (post.id === data.id) {
-            return data
-          }
+const posts = ref([])
+const isLoading = ref(false)
+const selectedPost = ref({})
+const isSidebarActive = ref(false)
 
-          return post
-        })
-        this.selectedPost = this.posts.find((post) => post.id === data.id)
-      })
-    },
-  },
+onMounted(() => {
+  isLoading.value = true
+
+  getPostsByUserId(props.userId)
+    .then(({ data }) => {
+      posts.value = data
+    })
+    .finally(() => {
+      isLoading.value = false
+    })
+})
+
+const handleAddPost = () => {
+  isSidebarActive.value = true
+  selectedPost.value = {}
+}
+
+const handleSelectPost = (post) => {
+  isSidebarActive.value = true
+  selectedPost.value = { ...post }
+}
+
+const handleCloseSidebar = () => {
+  selectedPost.value = {}
+  isSidebarActive.value = false
+}
+
+const handleDeletePost = (postId) => {
+  removePost(postId).then(() => {
+    posts.value = posts.value.filter((post) => post.id !== postId)
+    isSidebarActive.value = false
+  })
+}
+
+const handleCreatePost = (newPost) => {
+  const userId = props.userId
+  createPost({ ...newPost, userId }).then(({ data }) => {
+    posts.value.push(data)
+    selectedPost.value = posts.value[posts.value.length - 1]
+  })
+}
+
+const handleUpdatePost = (postToUpdate) => {
+  const userId = props.userId
+  updatePost(postToUpdate.id, { ...postToUpdate, userId }).then(({ data }) => {
+    posts.value = posts.value.map((post) => {
+      if (post.id === data.id) {
+        return data
+      }
+      return post
+    })
+    selectedPost.value = posts.value.find((post) => post.id === data.id)
+  })
 }
 </script>
 
@@ -85,7 +80,7 @@ export default {
 
         <!-- Loader -->
         <div class="is-flex is-justify-content-center is-align-items-center mt-2" v-if="isLoading">
-          <Loader />
+          <AppLoader />
         </div>
 
         <p
@@ -127,7 +122,7 @@ export default {
     </div>
   </div>
 
-  <Sidebar
+  <AppSidebar
     class="is-flex-grow-1"
     :isActive="isSidebarActive"
     :selectedPost="selectedPost"

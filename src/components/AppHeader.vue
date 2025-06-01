@@ -1,18 +1,12 @@
-<!-- eslint-disable vue/multi-word-component-names -->
-<!-- eslint-disable vue/no-reserved-component-names -->
-<script>
-export default {
-  name: 'Header',
-  props: {
-    user: Object,
-  },
-  emits: ['logOut'],
-  methods: {
-    handleLogOut() {
-      this.$emit('logOut');
-    }
-  }
+<script setup>
+defineProps({
+  user: Object,
+})
 
+const emit = defineEmits(['logOut'])
+
+const handleLogOut = () => {
+  emit('logOut')
 }
 </script>
 
