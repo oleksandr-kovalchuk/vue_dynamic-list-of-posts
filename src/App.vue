@@ -1,47 +1,51 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+<!-- eslint-disable vue/no-reserved-component-names -->
+<script>
+import Header from './components/Header.vue'
+import LoginPage from './components/LoginPage.vue'
+import PostsList from './components/PostsList.vue'
+export default {
+  components: {
+    LoginPage,
+    Header,
+    PostsList,
+  },
+  data() {
+    return {
+      user: {},
+    }
+  },
+  mounted() {
+    const userInLocalStorage = JSON.parse(localStorage.getItem('user'))
+    if (userInLocalStorage) {
+      this.user = userInLocalStorage
+    }
+  },
+  methods: {
+    handleSaveUser(user) {
+      localStorage.setItem('user', JSON.stringify(user))
+      this.user = user
+    },
+    handleRemoveUser() {
+      localStorage.removeItem('user')
+      this.user = {}
+    },
+  },
+}
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
+  <LoginPage v-if="!user.hasOwnProperty('id')" @addUser="handleSaveUser" />
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+  <template v-else>
+    <Header :user="user" @log-out="handleRemoveUser" />
+    <main class="section">
+      <div class="container">
+        <div class="tile is-ancestor is-flex is-flex-wrap-wrap">
+          <PostsList :user-id="user.id" />
+        </div>
+      </div>
+    </main>
+  </template>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
-</style>
+<style></style>
