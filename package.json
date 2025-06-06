@@ -3,17 +3,21 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "homepage": "https://oleksandr-kovalchuk.github.io/vue_dynamic-list-of-posts",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --fix",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",
     "axios": "^1.8.2",
     "bulma": "^1.0.3",
+    "gh-pages": "^6.3.0",
     "vue": "^3.5.13"
   },
   "devDependencies": {

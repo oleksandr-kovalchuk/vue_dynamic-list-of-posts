@@ -24,7 +24,7 @@ const removeUser = () => {
   user.value = {};
 };
 
-const isLoggedIn = () => user.value.id;
+const isLoggedIn = () => Boolean(user.value.id);
 </script>
 
 <template>

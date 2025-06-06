@@ -6,7 +6,7 @@ defineProps({
   },
 });
 
-const emit = defineEmits(['logOut']);
+const emit = defineEmits(['log-out']);
 </script>
 
 <template>
@@ -22,7 +22,7 @@ const emit = defineEmits(['logOut']);
             <p>User: {{ user.name }}</p>
           </div>
 
-          <a class="button is-light" @click="emit('logOut')">Logout</a>
+          <a class="button is-light" @click="emit('log-out')">Logout</a>
         </div>
       </div>
     </div>

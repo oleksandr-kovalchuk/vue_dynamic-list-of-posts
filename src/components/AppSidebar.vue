@@ -96,7 +96,7 @@ watch(
 
 <template>
   <div class="tile is-parent box ml-5 Sidebar" :class="{ 'Sidebar--open': isActive }">
-    <div class="ile is-child is-success">
+    <div class="tile is-child is-success">
       <div class="content">
         <template v-if="hasPostId() && !isEditingPost">
           <PostPreview
