@@ -1,22 +1,29 @@
 <script setup>
 defineProps({
-  comment: Object,
-})
+  comment: {
+    type: Object,
+    required: true,
+  },
+});
 
-const emit = defineEmits(['deleteComment'])
+const emit = defineEmits(['deleteComment']);
 </script>
 
 <template>
-  <article className="message is-small">
-    <div className="message-header">
-      <a :href="`mailto:${comment.email}`"> {{ comment.name }} </a>
+  <article class="message is-small">
+    <div class="message-header">
+      <a :href="`mailto:${comment.email}`">{{ comment.name }}</a>
+
       <button
         type="button"
-        className="delete is-small"
+        class="delete is-small"
         aria-label="delete"
         @click="emit('deleteComment', comment.id)"
-      ></button>
+      />
     </div>
-    <div className="message-body">{{ comment.body }}</div>
+
+    <div class="message-body">{{ comment.body }}</div>
   </article>
 </template>
+
+<style></style>

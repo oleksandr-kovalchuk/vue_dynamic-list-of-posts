@@ -1,13 +1,12 @@
 <script setup>
 defineProps({
-  user: Object,
-})
+  user: {
+    type: Object,
+    required: true,
+  },
+});
 
-const emit = defineEmits(['logOut'])
-
-const handleLogOut = () => {
-  emit('logOut')
-}
+const emit = defineEmits(['logOut']);
 </script>
 
 <template>
@@ -15,6 +14,7 @@ const handleLogOut = () => {
     <div class="navbar-item">
       <h2 class="is-size-4">Vue List Of Posts</h2>
     </div>
+
     <div class="navbar-end">
       <div class="navbar-item">
         <div class="buttons">
@@ -22,9 +22,11 @@ const handleLogOut = () => {
             <p>User: {{ user.name }}</p>
           </div>
 
-          <a class="button is-light" @click="handleLogOut"> Logout </a>
+          <a class="button is-light" @click="emit('logOut')">Logout</a>
         </div>
       </div>
     </div>
   </nav>
 </template>
+
+<style></style>

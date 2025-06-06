@@ -1,60 +1,58 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue';
 
 const props = defineProps({
   modelValue: String,
-  textAreaName: String,
+  textAreaName: {
+    type: String,
+    required: true,
+  },
   textAreaError: String,
-})
+});
 
-const emit = defineEmits(['update:modelValue', 'removeError'])
+const emit = defineEmits(['update:modelValue', 'removeError']);
 
-const label = ref('')
-const placeholder = ref('')
-const internalValue = ref(props.modelValue)
+const fieldConfig = {
+  postBody: {
+    label: 'Write Post Body',
+    placeholder: 'Post body',
+  },
+  commentBody: {
+    label: 'Write Comment',
+    placeholder: 'Comment',
+  },
+};
+
+const config = ref({});
+
+const inputValue = computed({
+  get: () => props.modelValue || '',
+  set: (value) => emit('update:modelValue', value),
+});
 
 onMounted(() => {
-  switch (props.textAreaName) {
-    case 'postBody':
-      label.value = 'Write Post Body'
-      placeholder.value = 'Post body'
-      break
-    case 'commentBody':
-      label.value = 'Write Comment'
-      placeholder.value = 'Comment'
-      break
-    default:
-      break
-  }
-})
-
-watch(
-  () => props.modelValue,
-  (newVal) => {
-    internalValue.value = newVal
-  },
-)
-
-watch(internalValue, (newVal) => {
-  emit('update:modelValue', newVal)
-})
+  config.value = fieldConfig[props.textAreaName] || {};
+});
 </script>
 
 <template>
   <div class="field">
-    <label class="label" :htmlFor="textAreaName">{{ label }} </label>
+    <label class="label" :for="textAreaName">{{ config.label }}</label>
+
     <div class="control">
       <textarea
         :id="textAreaName"
         :name="textAreaName"
-        :placeholder="placeholder"
+        :placeholder="config.placeholder"
         class="textarea"
-        :class="textAreaError"
-        v-model="internalValue"
+        :class="{ 'is-danger': textAreaError }"
+        v-model="inputValue"
         @input="emit('removeError')"
-      ></textarea>
+      />
     </div>
 
     <p class="help is-danger" v-if="textAreaError">{{ textAreaError }}</p>
   </div>
 </template>
+
+<style></style>

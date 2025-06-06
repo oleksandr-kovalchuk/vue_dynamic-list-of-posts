@@ -1,96 +1,119 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { getPostsByUserId, removePost, createPost, updatePost } from '@/api/posts'
-import AppLoader from './AppLoader.vue'
-import AppSidebar from './AppSidebar.vue'
+import { ref, onMounted } from 'vue';
+import { getPostsByUserId, removePost, createPost, updatePost } from '@/api/posts';
+import AppLoader from './AppLoader.vue';
+import AppSidebar from './AppSidebar.vue';
 
 const props = defineProps({
-  userId: Number,
-})
+  userId: {
+    type: Number,
+    required: true,
+  },
+});
 
-const posts = ref([])
-const isLoading = ref(false)
-const selectedPost = ref({})
-const isSidebarActive = ref(false)
+const posts = ref([]);
+const isLoading = ref(false);
+const selectedPost = ref({});
+const isSidebarActive = ref(false);
 
-onMounted(() => {
-  isLoading.value = true
+onMounted(async () => {
+  isLoading.value = true;
 
-  getPostsByUserId(props.userId)
-    .then(({ data }) => {
-      posts.value = data
-    })
-    .finally(() => {
-      isLoading.value = false
-    })
-})
+  try {
+    const { data } = await getPostsByUserId(props.userId);
 
-const handleAddPost = () => {
-  isSidebarActive.value = true
-  selectedPost.value = {}
-}
+    posts.value = data;
+  } catch (error) {
+    console.error('Failed to load posts:', error);
+  } finally {
+    isLoading.value = false;
+  }
+});
 
-const handleSelectPost = (post) => {
-  isSidebarActive.value = true
-  selectedPost.value = { ...post }
-}
+const openSidebar = (post = {}) => {
+  selectedPost.value = { ...post };
+  isSidebarActive.value = true;
+};
 
-const handleCloseSidebar = () => {
-  selectedPost.value = {}
-  isSidebarActive.value = false
-}
+const closeSidebar = () => {
+  selectedPost.value = {};
+  isSidebarActive.value = false;
+};
 
-const handleDeletePost = (postId) => {
-  removePost(postId).then(() => {
-    posts.value = posts.value.filter((post) => post.id !== postId)
-    isSidebarActive.value = false
-  })
-}
+const handleDeletePost = async (postId) => {
+  try {
+    await removePost(postId);
 
-const handleCreatePost = (newPost) => {
-  const userId = props.userId
-  createPost({ ...newPost, userId }).then(({ data }) => {
-    posts.value.push(data)
-    selectedPost.value = posts.value[posts.value.length - 1]
-  })
-}
+    posts.value = posts.value.filter((post) => post.id !== postId);
+    closeSidebar();
+  } catch (error) {
+    console.error('Failed to delete post:', error);
+  }
+};
 
-const handleUpdatePost = (postToUpdate) => {
-  const userId = props.userId
-  updatePost(postToUpdate.id, { ...postToUpdate, userId }).then(({ data }) => {
-    posts.value = posts.value.map((post) => {
-      if (post.id === data.id) {
-        return data
-      }
-      return post
-    })
-    selectedPost.value = posts.value.find((post) => post.id === data.id)
-  })
-}
+const handleCreatePost = async (newPostData) => {
+  try {
+    const postData = { ...newPostData, userId: props.userId };
+
+    const { data } = await createPost(postData);
+
+    posts.value.push(data);
+    selectedPost.value = data;
+  } catch (error) {
+    console.error('Failed to create post:', error);
+  }
+};
+
+const handleUpdatePost = async (updatedPost) => {
+  try {
+    const postData = { ...updatedPost, userId: props.userId };
+
+    const { data } = await updatePost(updatedPost.id, postData);
+
+    const index = posts.value.findIndex((post) => post.id === data.id);
+
+    if (index !== -1) {
+      posts.value[index] = data;
+    }
+
+    selectedPost.value = data;
+  } catch (error) {
+    console.error('Failed to update post:', error);
+  }
+};
+
+const togglePostSelection = (post) => {
+  if (post.id === selectedPost.value.id) {
+    closeSidebar();
+  } else {
+    openSidebar(post);
+  }
+};
+
+const isPostSelected = (post) => post.id === selectedPost.value.id;
 </script>
 
 <template>
-  <div class="tile is-parent is-flex-grow-1">
-    <div class="tile is-child box is-success">
+  <div class="tile box is-parent is-flex-grow-1 mb-0">
+    <div class="tile is-child is-success">
       <div class="block">
         <div class="block is-flex is-justify-content-space-between">
           <p class="title">Posts</p>
-          <button type="button" class="button is-link" @click="handleAddPost">Add New Post</button>
+
+          <button type="button" class="button is-link" @click="openSidebar()">Add New Post</button>
         </div>
 
-        <!-- Loader -->
         <div class="is-flex is-justify-content-center is-align-items-center mt-2" v-if="isLoading">
           <AppLoader />
         </div>
 
         <p
           class="is-flex is-justify-content-center is-align-items-center mt-2"
-          v-else-if="!isLoading && posts.length === 0"
+          v-else-if="posts.length === 0"
         >
           No posts yet
         </p>
 
-        <!-- Posts Table -->
         <table class="table is-fullwidth is-striped is-hoverable is-narrow" v-else>
           <thead>
             <tr class="has-background-link-light">
@@ -99,20 +122,19 @@ const handleUpdatePost = (postToUpdate) => {
               <th class="has-text-right">Actions</th>
             </tr>
           </thead>
+
           <tbody>
-            <tr v-for="post of posts" :key="post.id">
+            <tr v-for="post in posts" :key="post.id">
               <td>{{ post.id }}</td>
               <td>{{ post.title }}</td>
               <td class="has-text-right is-vcentered">
                 <button
                   type="button"
                   class="button is-link"
-                  :class="{ 'is-light': post.id !== selectedPost.id }"
-                  @click="
-                    post.id === selectedPost.id ? handleCloseSidebar() : handleSelectPost(post)
-                  "
+                  :class="{ 'is-light': !isPostSelected(post) }"
+                  @click="togglePostSelection(post)"
                 >
-                  {{ post.id !== selectedPost.id ? 'Open' : 'Close' }}
+                  {{ isPostSelected(post) ? 'Close' : 'Open' }}
                 </button>
               </td>
             </tr>
@@ -124,11 +146,13 @@ const handleUpdatePost = (postToUpdate) => {
 
   <AppSidebar
     class="is-flex-grow-1"
-    :isActive="isSidebarActive"
-    :selectedPost="selectedPost"
-    @deletePost="handleDeletePost"
-    @createPost="handleCreatePost"
-    @updatePost="handleUpdatePost"
-    @closeSidebar="handleCloseSidebar"
+    :is-active="isSidebarActive"
+    :selected-post="selectedPost"
+    @delete-post="handleDeletePost"
+    @create-post="handleCreatePost"
+    @update-post="handleUpdatePost"
+    @close-sidebar="closeSidebar"
   />
 </template>
+
+<style></style>

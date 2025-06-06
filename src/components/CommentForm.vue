@@ -1,89 +1,97 @@
 <script setup>
-import { ref } from 'vue'
-import InputField from './InputField.vue'
-import TextAreaField from './TextAreaField.vue'
+import { ref } from 'vue';
+import InputField from './InputField.vue';
+import TextAreaField from './TextAreaField.vue';
 
 defineProps({
   error: String,
-})
+});
 
-const emit = defineEmits(['createComment', 'closeForm'])
+const emit = defineEmits(['createComment', 'closeForm']);
 
-const fields = ref({
+const formData = ref({
   name: '',
   email: '',
   body: '',
-})
+});
 
-const errors = ref({
-  name: '',
-  email: '',
-  body: '',
-})
+const errors = ref({});
 
-const handleRemoveError = (key) => {
-  errors.value[key] = ''
-}
+const emailPattern = /^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/;
 
-const handleCheckErrors = () => {
-  if (!fields.value.name) {
-    errors.value.name = `Name is required!`
+const clearError = (field) => {
+  if (errors.value[field]) {
+    delete errors.value[field];
   }
-  if (!fields.value.email) {
-    errors.value.email = `Email is required!`
-  }
-  if (!fields.value.body) {
-    errors.value.body = `Comment is required!`
+};
+
+const validateForm = () => {
+  const newErrors = {};
+
+  if (!formData.value.name?.trim()) {
+    newErrors.name = 'Name is required!';
   }
 
-  const emailPattern = /^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/
-  if (!errors.value.email && !emailPattern.test(fields.value.email)) {
-    errors.value.email = `Email is no valid!`
+  if (!formData.value.email?.trim()) {
+    newErrors.email = 'Email is required!';
+  } else if (!emailPattern.test(formData.value.email.trim())) {
+    newErrors.email = 'Email is not valid!';
   }
-}
+
+  if (!formData.value.body?.trim()) {
+    newErrors.body = 'Comment is required!';
+  }
+
+  errors.value = newErrors;
+
+  return Object.keys(newErrors).length === 0;
+};
 
 const handleSubmit = () => {
-  handleCheckErrors()
-
-  if (Object.values(errors.value).some((error) => error.length > 0)) {
-    return
+  if (!validateForm()) {
+    return;
   }
 
-  emit('createComment', { ...fields.value })
-}
+  const commentData = {
+    name: formData.value.name.trim(),
+    email: formData.value.email.trim(),
+    body: formData.value.body.trim(),
+  };
 
-const handleReset = () => {
-  emit('closeForm')
-}
+  emit('createComment', commentData);
+};
 </script>
 
 <template>
-  <form @submit.prevent="handleSubmit" @reset="handleReset" novalidate>
+  <form @submit.prevent="handleSubmit" @reset="emit('closeForm')" novalidate>
     <InputField
-      v-model="fields.name"
-      :input-name="'commentAuthor'"
+      v-model="formData.name"
+      input-name="commentAuthor"
       :input-error="errors.name"
-      @removeError="handleRemoveError('name')"
-    />
-    <InputField
-      v-model="fields.email"
-      :input-name="'commentAuthorEmail'"
-      :input-error="errors.email"
-      @removeError="handleRemoveError('email')"
-    />
-    <TextAreaField
-      v-model="fields.body"
-      :text-area-name="'commentBody'"
-      :text-area-error="errors.body"
-      @removeError="handleRemoveError('body')"
+      @remove-error="clearError('name')"
     />
 
-    <div className="field is-grouped">
-      <div className="control">
-        <button type="submit" className="button is-link">Save</button>
+    <InputField
+      v-model="formData.email"
+      input-name="commentAuthorEmail"
+      :input-error="errors.email"
+      @remove-error="clearError('email')"
+    />
+
+    <TextAreaField
+      v-model="formData.body"
+      text-area-name="commentBody"
+      :text-area-error="errors.body"
+      @remove-error="clearError('body')"
+    />
+
+    <div class="field is-grouped">
+      <div class="control">
+        <button type="submit" class="button is-link">Save</button>
       </div>
-      <div className="control">
-        <button type="reset" className="button is-link is-light">Cancel</button>
+
+      <div class="control">
+        <button type="reset" class="button is-link is-light">Cancel</button>
       </div>
     </div>
   </form>
@@ -92,3 +100,5 @@ const handleReset = () => {
     <p class="title is-6">{{ error }}</p>
   </div>
 </template>
+
+<style></style>

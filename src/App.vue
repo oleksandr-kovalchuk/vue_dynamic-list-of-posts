@@ -1,34 +1,38 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import AppHeader from './components/AppHeader.vue'
-import LoginPage from './components/LoginPage.vue'
-import PostsList from './components/PostsList.vue'
+import { ref, onMounted } from 'vue';
+import AppHeader from './components/AppHeader.vue';
+import LoginPage from './components/LoginPage.vue';
+import PostsList from './components/PostsList.vue';
 
-const user = ref({})
+const user = ref({});
 
 onMounted(() => {
-  const userInLocalStorage = JSON.parse(localStorage.getItem('user'))
-  if (userInLocalStorage) {
-    user.value = userInLocalStorage
+  const storedUser = localStorage.getItem('user');
+
+  if (storedUser) {
+    user.value = JSON.parse(storedUser);
   }
-})
+});
 
-const handleSaveUser = (userData) => {
-  localStorage.setItem('user', JSON.stringify(userData))
-  user.value = userData
-}
+const saveUser = (userData) => {
+  localStorage.setItem('user', JSON.stringify(userData));
+  user.value = userData;
+};
 
-const handleRemoveUser = () => {
-  localStorage.removeItem('user')
-  user.value = {}
-}
+const removeUser = () => {
+  localStorage.removeItem('user');
+  user.value = {};
+};
+
+const isLoggedIn = () => user.value.id;
 </script>
 
 <template>
-  <LoginPage v-if="!user.hasOwnProperty('id')" @addUser="handleSaveUser" />
+  <LoginPage v-if="!isLoggedIn()" @addUser="saveUser" />
 
   <template v-else>
-    <AppHeader :user="user" @log-out="handleRemoveUser" />
+    <AppHeader :user="user" @log-out="removeUser" />
+
     <main class="section">
       <div class="container">
         <div class="tile is-ancestor is-flex is-flex-wrap-wrap">
