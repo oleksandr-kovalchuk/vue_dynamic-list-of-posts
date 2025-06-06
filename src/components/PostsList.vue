@@ -95,7 +95,7 @@ const isPostSelected = (post) => post.id === selectedPost.value.id;
 
 <template>
   <div class="tile box is-parent is-flex-grow-1 mb-0">
-    <div class="tile is-child is-success">
+    <div class="tile is-child">
       <div class="block">
         <div class="block is-flex is-justify-content-space-between">
           <p class="title">Posts</p>
